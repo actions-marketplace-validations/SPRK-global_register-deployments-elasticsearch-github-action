@@ -1,0 +1,7 @@
+boto3~=1.18.13
+elasticsearch==7.11
+requests
+requests-aws4auth
+click~=7.0
+pytest~=6.2.4
+parameterized==0.7.0
