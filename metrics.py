@@ -1,4 +1,3 @@
-import math
 from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Optional, Dict, Union, List, Type
@@ -12,11 +11,17 @@ class Metric(ABC):
     environment: str
     version: str
     application_id: str
-    timestamp_millis: int
+    status: bool
+    timestamp: datetime
     meta: Dict[str, str]
 
-    def __init__(self, application_id: str, version: str, environment: str, service: Optional[str] = None,
-                 meta: Optional[Dict[str, str]] = None):
+    def __init__(self,
+                 application_id: str,
+                 version: str,
+                 environment: str,
+                 service: Optional[str] = None,
+                 meta: Optional[Dict[str, str]] = None,
+                 status: bool = True):
 
         super().__init__()
 
@@ -28,10 +33,12 @@ class Metric(ABC):
         self.environment = environment
         self.version = version
         self.application_id = application_id
-        self.timestamp_millis = math.floor(datetime.utcnow().microsecond / 1000)
+        self.status = status
+        self.timestamp = datetime.utcnow()
 
+    @classmethod
     @abstractmethod
-    def index(self) -> str:
+    def index(cls) -> str:
         raise NotImplementedError('subclasses must override index()!')
 
     def id(self):
@@ -50,10 +57,11 @@ class Metric(ABC):
 class Deployment(Metric, ABC):
     INDEX_NAME: str = 'deployments'
 
-    def index(self) -> str:
-        return self.INDEX_NAME
+    @classmethod
+    def index(cls) -> str:
+        return cls.INDEX_NAME
 
 
 supported_metrics: List[Type[Metric]] = [
-  Deployment,
+    Deployment,
 ]
