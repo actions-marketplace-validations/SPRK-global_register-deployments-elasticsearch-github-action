@@ -12,6 +12,7 @@ FROM cicirello/pyaction-lite:3
 # FROM ghcr.io/cicirello/pyaction:4
 # FROM ghcr.io/cicirello/pyaction:3
 
+RUN apk add --update py-pip
 RUN python3 -m pip install --upgrade pip
 RUN pip install -r requirements.txt; fi
 
