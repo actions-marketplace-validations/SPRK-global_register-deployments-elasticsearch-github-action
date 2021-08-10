@@ -19,4 +19,5 @@ RUN python3 -m pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 COPY entrypoint.py /entrypoint.py
+COPY es_client.py /es_client.py
 ENTRYPOINT ["/entrypoint.py"]
