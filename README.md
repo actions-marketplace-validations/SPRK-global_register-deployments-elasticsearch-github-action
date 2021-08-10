@@ -10,7 +10,7 @@ You'll need a reachable ElasticSearch instance and a previously created index.
 
 ```yaml
 - name: Register deployment in elasticsearch index
-  uses: actions/register-deployments-in-elasticsearch@1.0.1
+  uses: actions/register-deployments-elasticsearch-action@1.0.2
   env:
     KPI_SEND_ES_HOST: elasticsearch-host.com
     KPI_SEND_ES_USER: elasticsearch
