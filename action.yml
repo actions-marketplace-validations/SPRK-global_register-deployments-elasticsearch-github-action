@@ -1,7 +1,7 @@
 # Make sure to change the action name here (must be unique).
 # Update the rest as needed.
 name: 'register-deployments-elasticsearch-action'
-description: 'This action allows to index GitHub action deployments in a specified ES instance'
+description: 'This action allows to index deployments and their statuses in a specified ES instance'
 branding: # Look at documentation for branding options/requirements. These are my favorites.
   icon: 'book-open'
   color: 'green'
@@ -12,6 +12,9 @@ inputs:
   version:
     description: 'The version of this deployment'
     required: true
+  index:
+    description: 'In which index should the deployments be tracked'
+    required: false
   environment:
     description: 'The environment in which the application is running'
     required: false
@@ -28,15 +31,6 @@ inputs:
     description: 'Indicating if this deployment has failed or succeeded'
     required: false
     default: "false"
-  es-host:
-    description: 'The hostname of the ES instance'
-    required: false
-  es-user:
-    description: 'The ES user to use to connect to the ES instance'
-    required: false
-  es-password:
-    description: 'The ES user to use to connect to the ES instance'
-    required: false
 outputs:
   doc-id:
     description: 'The document ID'
@@ -49,3 +43,4 @@ runs:
     - send
     - "{\"application_id\":\"${{ inputs.application-id }}\",\"version\":\"${{ inputs.application-id }}\",\"environment\":\"${{ inputs.environment }}\",\"status\":${{ inputs.status }},\"meta\":${{ inputs.meta }},\"service\":\"${{ inputs.service-id }}\"}"
     - ${{ inputs.application-id }}-${{ inputs.version }}-${{ inputs.environment }}-${{ inputs.service-id }}
+    - ${{ inputs.index }}
