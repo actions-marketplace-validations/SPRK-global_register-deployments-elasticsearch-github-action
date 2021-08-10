@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 import json
+import math
+import time
 
 import click
 from elasticsearch import RequestError
 
-import metrics
 from es_client import ESClient
 
 
@@ -14,51 +15,56 @@ def cli():
 
 
 @cli.command()
+@click.argument("index-name")
 @click.option(
     "--es-host",
+    default="localhost",
 )
 @click.option(
     "--es-user",
+    default="",
 )
 @click.option(
     "--es-password",
+    default="",
 )
-def setup(es_host: str, es_user: str, es_password: str):
-    _process_supported_metrics(
-        ESClient.factory(
-            ESClient.MODE_HTTP,
-            **(_prepare_kw_args(es_host, es_password, es_user))
-        )
+def setup(index_name: str, es_host: str, es_user: str, es_password: str):
+    _make_index_creation_request(
+        ESClient.factory(ESClient.MODE_HTTP, **(_prepare_kw_args(es_host, es_password, es_user))),
+        index_name
     )
 
 
 @cli.command()
 @click.argument(
-    'doc_as_json'
+    'doc-as-json'
+)
+@click.argument(
+    "doc-id",
+)
+@click.argument(
+    "index",
 )
 @click.option(
     "--es-host",
+    default="localhost",
 )
 @click.option(
     "--es-user",
+    default="",
 )
 @click.option(
     "--es-password",
+    default="",
 )
-def deployment(doc_as_json: str, es_host: str, es_user: str, es_password: str):
+def send(doc_as_json: str, doc_id: str, index: str, es_host: str, es_user: str, es_password: str):
     doc = json.loads(doc_as_json)
     merged_doc = {**(_default_doc_structure()), **doc}
-    new_deployment = metrics.Deployment(
-        merged_doc["application_id"],
-        merged_doc["version"],
-        merged_doc["environment"],
-        merged_doc["service"],
-        merged_doc["meta"],
-        bool(merged_doc["status"]),
-    )
 
     es = ESClient.factory(ESClient.MODE_HTTP, **(_prepare_kw_args(es_host, es_password, es_user)))
-    es.index(metrics.Deployment.index(), body=new_deployment.__dict__, id=new_deployment.id())
+    es.index(index, body=merged_doc, id=doc_id)
+    print("::set-output name=doc-id::" + doc_id)
+    print("::set-output name=doc::" + json.dumps(merged_doc))
 
 
 def _prepare_kw_args(es_host, es_password, es_user):
@@ -70,13 +76,7 @@ def _prepare_kw_args(es_host, es_password, es_user):
     return kwargs
 
 
-def _process_supported_metrics(client):
-    for metric in metrics.supported_metrics:
-        metric_index = metric.index()
-        _make_request(client, metric_index)
-
-
-def _make_request(client, metric_index) -> None:
+def _make_index_creation_request(client, metric_index) -> None:
     try:
         client.indices.create(metric_index)
     except RequestError:
@@ -89,8 +89,9 @@ def _default_doc_structure() -> dict:
         "version": None,
         "environment": None,
         "service": None,
-        "meta": None,
-        "status": None,
+        "meta": {},
+        "status": False,
+        "timestamp": math.floor(time.time_ns() / 1000 / 1000),
     }
 
 

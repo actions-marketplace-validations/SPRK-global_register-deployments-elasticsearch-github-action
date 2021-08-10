@@ -1,3 +1,4 @@
 *
 !Dockerfile
 !entrypoint.py
+!es_client.py

@@ -1,27 +1,51 @@
 # Make sure to change the action name here (must be unique).
 # Update the rest as needed.
-name: 'unique-action-goes-here'
-description: 'BRIEF DESCRIPTION OF YOUR ACTION'
+name: 'register-deployments-elasticsearch-action'
+description: 'This action allows to index GitHub action deployments in a specified ES instance'
 branding: # Look at documentation for branding options/requirements. These are my favorites.
   icon: 'book-open'
   color: 'green'
 inputs:
-  input-one:  
-    description: 'Description of input-one'
+  application-id:
+    description: 'The application id to register the deployment for'
+    required: true
+  version:
+    description: 'The version of this deployment'
+    required: true
+  environment:
+    description: 'The environment in which the application is running'
     required: false
-    default: 'default value goes here'
-  input-two:
-    description: 'Description of input-two'
+    default: "local"
+  service-id:
+    description: 'The service id to register the deployment for'
     required: false
-    default: 'default value goes here'
+    default: "null"
+  meta:
+    description: 'A JSON object containing any meta information required'
+    required: false
+    default: "{}"
+  status:
+    description: 'Indicating if this deployment has failed or succeeded'
+    required: false
+    default: "false"
+  es-host:
+    description: 'The hostname of the ES instance'
+    required: false
+  es-user:
+    description: 'The ES user to use to connect to the ES instance'
+    required: false
+  es-password:
+    description: 'The ES user to use to connect to the ES instance'
+    required: false
 outputs:
-  output-one:
-    description: 'Description of output-one'
-  output-two:
-    description: 'Description of output-two'	
+  doc-id:
+    description: 'The document ID'
+  doc:
+    description: 'The JSON of the registered doc'
 runs:
   using: 'docker'
   image: 'Dockerfile'
   args:
-    - ${{ inputs.input-one }}
-    - ${{ inputs.input-two }}
+    - send
+    - "{\"application_id\":\"${{ inputs.application-id }}\",\"version\":\"${{ inputs.application-id }}\",\"environment\":\"${{ inputs.environment }}\",\"status\":${{ inputs.status }},\"meta\":${{ inputs.meta }},\"service\":\"${{ inputs.service-id }}\"}"
+    - ${{ inputs.application-id }}-${{ inputs.version }}-${{ inputs.environment }}-${{ inputs.service-id }}
